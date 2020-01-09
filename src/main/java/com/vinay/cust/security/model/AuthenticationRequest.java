@@ -1,4 +1,4 @@
-package com.vinay.cust.model;
+package com.vinay.cust.security.model;
 
 public class AuthenticationRequest {
 

@@ -1,9 +1,8 @@
-package com.vinay.cust.model;
+package com.vinay.cust.security.model;
 
 public class AuthenticationResponse {
 
 	private String jwt;
-
 	public AuthenticationResponse(String jwt) {
 		super();
 		this.jwt = jwt;
@@ -12,5 +11,6 @@ public class AuthenticationResponse {
 	public String getJwt() {
 		return jwt;
 	}
+	
 	
 }

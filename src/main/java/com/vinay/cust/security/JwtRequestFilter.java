@@ -18,6 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.vinay.cust.service.MyUserDetailsService;
 import com.vinay.cust.utils.JwtUtil;
 
+import io.jsonwebtoken.SignatureException;
+
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
@@ -33,10 +35,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		final String authHeader = request.getHeader("Authorization");
-		
+		username = "";
 		if(authHeader != null && authHeader.startsWith("Bearer ")){
 			jwt  = authHeader.substring(7);
-			username  = jwtTokenUtils.extractUsername(jwt);
+			try{
+				username  = jwtTokenUtils.extractUsername(jwt);
+			}catch(SignatureException e){
+				System.out.println("UNATHORIZED" +username);
+			}
+			
 		}
 		if(username != null && SecurityContextHolder.getContext().getAuthentication() == null ){
 			UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
