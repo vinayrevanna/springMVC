@@ -78,6 +78,7 @@ public class ProfileController {
 	public ResponseEntity<Customer> getCustomer(@PathVariable String id){
 		return new ResponseEntity<>(custService.getCustomer(id),HttpStatus.OK);
 		//return new ResponseEntity<>(custService.findByCustomerId(id),HttpStatus.OK);
+		//default 
 	}
 	
 	@DeleteMapping("/customer/{id}")
