@@ -1,40 +1,46 @@
 package com.vinay.cust.model;
 
-import java.math.BigInteger;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-@Document("customer")
+@Entity
 public class Customer {
+	
 	@Id
-	private String id;
-	private long customerId;
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@Column(updatable = false, nullable = false,name="customerId")
+	private Integer customerId;
+	@Column(nullable = false,unique=true,updatable=false)
+	private String username;
+	@Column(nullable = false)
 	private String name;
-	private List<String> address;
 	private int pincode;
 	private long phonenumber;
+	@Column(nullable = false)
+	private String password;
+	@Column
+	private String refToken;
 	
+	public Integer getCustomerId() {
+		return customerId;
+	}
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
-	}
-	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public List<String> getAddress() {
-		return address;
-	}
-	public void setAddress(List<String> address) {
-		this.address = address;
 	}
 	public int getPincode() {
 		return pincode;
@@ -48,16 +54,21 @@ public class Customer {
 	public void setPhonenumber(long phonenumber) {
 		this.phonenumber = phonenumber;
 	}
-	@Override
-	public String toString() {
-		return "Customer [id=" + id + ", name=" + name + ", address=" + address + ", pincode=" + pincode
-				+ ", phonenumber=" + phonenumber + "]";
+	public String getPassword() {
+		return password;
 	}
-	public long getCustomerId() {
-		return customerId;
+	public void setPassword(String password) {
+		this.password = password;
 	}
-	public void setCustomerId(long customerId) {
-		this.customerId = customerId;
+	public String getRefToken() {
+		return refToken;
 	}
+	public void setRefToken(String refToken) {
+		this.refToken = refToken;
+	}
+	
+	
+
+	
 	
 }

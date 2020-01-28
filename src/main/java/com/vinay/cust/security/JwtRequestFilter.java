@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.vinay.cust.service.MyUserDetailsService;
 import com.vinay.cust.utils.JwtUtil;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 
 @Component
@@ -35,13 +36,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		final String authHeader = request.getHeader("Authorization");
-		username = "";
 		if(authHeader != null && authHeader.startsWith("Bearer ")){
 			jwt  = authHeader.substring(7);
+				
 			try{
 				username  = jwtTokenUtils.extractUsername(jwt);
 			}catch(SignatureException e){
-				System.out.println("UNATHORIZED" +username);
+				System.out.println("UNATHORIZED");
+				
+			}catch(ExpiredJwtException e){
+				System.out.println("Call refresh token");
+				
+				
+			}catch(Exception e){
+				e.printStackTrace();
 			}
 			
 		}
@@ -54,8 +62,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 				usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 			}
+			}catch(ExpiredJwtException e){
+				//System.out.println("Call refresh token");
 			}catch(Exception e){
-				
+				e.printStackTrace();
 			}
 		}
 		

@@ -1,5 +1,8 @@
 package com.vinay.cust.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,39 +15,51 @@ public class CustomerService {
 
 	@Autowired
 	private CustomerRepository customerRepository;
-	
-	public void saveCustomer(CustomerDto custdto){
+
+	public void saveCustomer(CustomerDto custdto) {
 		Customer cust = new Customer();
 		cust.setName(custdto.getName());
-		cust.setCustomerId(custdto.getCustomerId());
-		cust.setAddress(custdto.getAddress());
 		cust.setPhonenumber(custdto.getPhonenumber());
 		cust.setPincode(custdto.getPincode());
+		cust.setPassword(custdto.getPassword());
+		cust.setUsername(custdto.getUsername());
 		customerRepository.save(cust);
 	}
-	
-	public void updateCustomer(CustomerDto custdto){
+
+	public void updateCustomer(CustomerDto custdto) {
 		Customer cust = new Customer();
-		cust.setId(custdto.getId());
 		cust.setCustomerId(custdto.getCustomerId());
 		cust.setName(custdto.getName());
-		cust.setAddress(custdto.getAddress());
 		cust.setPhonenumber(custdto.getPhonenumber());
 		cust.setPincode(custdto.getPincode());
+		cust.setUsername(custdto.getUsername());
 		customerRepository.save(cust);
 	}
-	
+
 	public void deleteCustomer(String id) {
 		Customer cust = new Customer();
-		cust.setId(id);
 		customerRepository.delete(cust);
 	}
-	
-	public Customer getCustomer(String id){
-		return customerRepository.findByid(id);
+
+	public Optional<Customer> getCustomer(Integer id) {
+		return customerRepository.findById(id);
 	}
-	
-	public Customer findByCustomerId(long id){
-		return customerRepository.findByCustomerId(id);
+
+	public List<Customer> getAllCustomers() {
+//		System.out.println("check" + customerRepository.findCustomerInfo());
+		return (List<Customer>) customerRepository.findAll();
+	}
+
+	public void updateRefToken(String refToken, String userName) {
+		Customer customer = customerRepository.findByUsername(userName);
+		customer.setRefToken(refToken);
+		customerRepository.save(customer);
+	}
+
+	public String getRefToken(String username) {
+		Customer customer = customerRepository.findByUsername(username);// check
+																		// for
+																		// empty
+		return customer.getRefToken();
 	}
 }
