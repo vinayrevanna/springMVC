@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,19 +54,18 @@ public class ProfileController {
 
 	@GetMapping("/hello")
 	public ResponseEntity<SignupResponse> hello() {
-		final String status = "Success";
-		return new ResponseEntity<SignupResponse>(new SignupResponse("Hello User!"), HttpStatus.OK);
+		return new ResponseEntity<>(new SignupResponse("Hello User!"), HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public ResponseEntity<AuthenticationResponse> createAuthToken(@RequestBody AuthenticationRequest authReq)
+	@PostMapping(value = "/authenticate")
+	public ResponseEntity<AuthenticationResponse> createAuthToken(@RequestBody AuthenticationRequest authReq, HttpServletResponse response)
 			throws Exception {
 		try {
 			authManager.authenticate(
 					new UsernamePasswordAuthenticationToken(authReq.getUsername(), authReq.getPassword()));
 		} catch (BadCredentialsException e) {
 
-			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse("", "", "failure", new Date()),
+			return new ResponseEntity<>(new AuthenticationResponse("", "", "failure", new Date()),
 					HttpStatus.UNAUTHORIZED);
 		}
 		final UserDetails userdetails = userDetailsService.loadUserByUsername(authReq.getUsername());
@@ -71,63 +74,60 @@ public class ProfileController {
 		custService.updateRefToken(refJwt, authReq.getUsername());
 		final Date expDate = jwtTokenUtils.extractExpiration(jwt);
 		final String status = "Success";
-		return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse(jwt, refJwt, status, expDate),
+		return new ResponseEntity<>(new AuthenticationResponse(jwt, refJwt, status, expDate),
 				HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/signUp", method = RequestMethod.POST)
+	@PostMapping(value = "/signUp")
 	public ResponseEntity<SignupResponse> createCustomer(@RequestBody CustomerDto customer) {
 		try {
 			custService.saveCustomer(customer);
-			return new ResponseEntity<SignupResponse>(new SignupResponse("New user successfully saved"), HttpStatus.OK);
+			return new ResponseEntity<>(new SignupResponse("New user successfully saved"), HttpStatus.OK);
 		} catch (DataIntegrityViolationException e) {
-			// e.printStackTrace();
-			return new ResponseEntity<SignupResponse>(new SignupResponse("Username Already Exists!"),
+			return new ResponseEntity<>(new SignupResponse("Username Already Exists!"),
 					HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<SignupResponse>(new SignupResponse("New user Creation failed"),
+			return new ResponseEntity<>(new SignupResponse("New user Creation failed"),
 					HttpStatus.BAD_REQUEST);
 		}
 
 	}
 
-	@RequestMapping(value = "/refreshToken", method = RequestMethod.POST)
+	@PostMapping(value = "/refreshToken")
 	public ResponseEntity<AuthenticationResponse> validateRefreshToken(@RequestBody RefreshRequest refReq) {
 		String username = "";
 		try {
 			username = jwtTokenUtils.extractUsername(refReq.getRefJwt());
 		} catch (SignatureException e) {
-			System.out.println("UNATHORIZED refres");
-			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse("", "", "failure", new Date()),
+			return new ResponseEntity<>(new AuthenticationResponse("", "", "Malformed token", new Date()),
 					HttpStatus.UNAUTHORIZED);
 		} catch (ExpiredJwtException e) {
-			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse("", "", "failure", new Date()),
+			return new ResponseEntity<>(new AuthenticationResponse("", "", "Token Expried", new Date()),
 					HttpStatus.UNAUTHORIZED);
 		}
 		final UserDetails userdetails = userDetailsService.loadUserByUsername(username);
-		if (custService.getRefToken(username).equals(refReq.getRefJwt())) {
-			if (jwtTokenUtils.validateToken(refReq.getRefJwt(), userdetails)) {
+		if (custService.getRefToken(username).equals(refReq.getRefJwt()) && Boolean.TRUE.equals(jwtTokenUtils.validateToken(refReq.getRefJwt(), userdetails))) {
 				final String jwt = jwtTokenUtils.generateAccessToken(userdetails);
 				final String refJwt = jwtTokenUtils.generateRefToken(userdetails);
 				custService.updateRefToken(refJwt, username);
 				final Date expDate = jwtTokenUtils.extractExpiration(jwt);
 				final String status = "Success";
-				return new ResponseEntity<AuthenticationResponse>(
-						new AuthenticationResponse(jwt, refJwt, status, expDate), HttpStatus.OK);
-			} else {
-				return new ResponseEntity<AuthenticationResponse>(
-						new AuthenticationResponse("", "", "failure", new Date()), HttpStatus.UNAUTHORIZED);
-			}
+				return new ResponseEntity<>(new AuthenticationResponse(jwt, refJwt, status, expDate), HttpStatus.OK);
+			
 		} else {
-			return new ResponseEntity<AuthenticationResponse>(new AuthenticationResponse("", "", "failure", new Date()),
+			return new ResponseEntity<>(new AuthenticationResponse("", "", "failure", new Date()),
 					HttpStatus.UNAUTHORIZED);
 		}
 	}
 
-	@RequestMapping(value = "/customers", method = RequestMethod.GET)
+	@GetMapping(value = "/customers")
 	public List<Customer> getAllCustomers() {
 		return custService.getAllCustomers();
 	}
-
+	
+	/*@GetMapping(value = "/error")
+	public ResponseEntity<SignupResponse> getUnauthorizedError() {
+		return new ResponseEntity<>(new SignupResponse("Failed : User Unauthorized to acess this content!"), HttpStatus.UNAUTHORIZED);
+	}
+*/
 }

@@ -1,5 +1,7 @@
 HELP.md
-target/
+target/*
+### git rm -r target/
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
