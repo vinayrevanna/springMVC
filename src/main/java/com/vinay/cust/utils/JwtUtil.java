@@ -25,8 +25,8 @@ public class JwtUtil {
 	@Value("${REFRESH_TOKEN}")
 	private String refresh_token;
 	
-	private int ACCESS_TOKEN_EXPIRATION_TIME = 1 * 60 * 1000;
-	private int REFRESH_TOKEN_EXPIRATION_TIME = 5 * 60 * 1000;
+	private int ACCESS_TOKEN_EXPIRATION_TIME = 100 * 60 * 1000;
+	private int REFRESH_TOKEN_EXPIRATION_TIME = 5000 * 60 * 1000;
 	
 	private Boolean genearateRefToken = false;
 	
